@@ -85,16 +85,25 @@ final class EntityManager {
 	}
 
 	/**
+	 * @param string $entityClassName
+	 * @return string
+	 */
+	public function generateRepositoryName($entityClassName) {
+		return EntityManager::PREFIX . str_replace("\\", "", $entityClassName) . "Repository";
+	}
+
+	/**
 	 * Generate repository class
 	 * @param $className
-	 * @throws Exceptions\RepositoryException
+	 * @throws RepositoryException
+	 * @throws \ErrorException
 	 */
 	private function generateRepository($className) {
 		$table = EntityReflexion::getTable($className);
 		if ($table === NULL) {
 			throw new RepositoryException("Entity \"" . $className . " has no annotation \"table\"");
 		} else {
-			$genClassName = EntityManager::PREFIX . str_replace("\\", "", $className) . "Repository";
+			$genClassName = $this->generateRepositoryName($className);
 			if (!class_exists($genClassName)) {
 				$class = $this->cache->load($genClassName);
 				if ($class) {
@@ -104,6 +113,7 @@ final class EntityManager {
 					$repository->addExtend('\slimORM\BaseRepository');
 					$repository->setFinal(TRUE);
 					$repository->addDocument($genClassName);
+					$repository->addDocument("@generated");
 					$repository->addProperty("connection")
 						->setVisibility("protected")
 						->setDocuments(array('@var \Nette\Database\Context'));
@@ -147,7 +157,8 @@ final class EntityManager {
 	/**
 	 * Generate entity class
 	 * @param $className
-	 * @throws Exceptions\RepositoryException
+	 * @throws RepositoryException
+	 * @throws \ErrorException
 	 */
 	private function generateEntity($className)	{
 		$genClassName = EntityManager::PREFIX . str_replace("\\", "", $className) . "Entity";
