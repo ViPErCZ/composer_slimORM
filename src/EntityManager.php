@@ -110,14 +110,14 @@ final class EntityManager {
 					$repository = new ClassType($genClassName);
 					$repository->addExtend('\slimORM\BaseRepository');
 					$repository->setFinal(TRUE);
-					$repository->addDocument($genClassName);
-					$repository->addDocument("@generated");
+					$repository->addComment($genClassName);
+					$repository->addComment("@generated");
 					$repository->addProperty("connection")
 						->setVisibility("protected")
-						->setDocuments(array('@var \Nette\Database\Context'));
+						->addComment('@var \Nette\Database\Context');
 					$repository->addProperty("entityManager")
 						->setVisibility("protected")
-						->setDocuments(array('@var \slimORM\EntityManager'));
+						->addComment('@var \slimORM\EntityManager');
 					$parameter = new Parameter();
 					$parameter->setName("connection");
 					$parameter->setTypeHint('\Nette\Database\Context');
@@ -131,7 +131,7 @@ final class EntityManager {
 					$parameter = new Parameter();
 					$parameter->setName("key");
 					$repository->addMethod("get")
-						->setDocuments(array("Find item by primary key", "@param int \$key", "@return $entity|null"))
+						->addComment("Find item by primary key", "@param int \$key", "@return $entity|null")
 						->setParameters(array($parameter))
 						->setBody("return parent::get(\$key);");
 
@@ -177,8 +177,8 @@ final class EntityManager {
 					$repository = new ClassType($genClassName);
 					$repository->addExtend($className);
 					$repository->setFinal(TRUE);
-					$repository->addDocument($genClassName);
-					$repository->addDocument("@table " . $table);
+					$repository->addComment($genClassName);
+					$repository->addComment("@table " . $table);
 
 					$columns = $this->getColumns($className);
 					$this->generateGetters($columns, $repository);
@@ -209,8 +209,8 @@ final class EntityManager {
 	 */
 	private function generateOverrides(ClassType $repository) {
 		$repository->addMethod("getReferences")
-			->addDocument("@return array")
-			->addDocument('@throws Exception\EntityException')
+			->addComment("@return array")
+			->addComment('@throws Exception\EntityException')
 			->setBody("if (count(\$this->references) == 0) {\n\t\$references = parent::getReferences();\n\n\tforeach (\$references as &\$ref) {\n\t\t\$ref->targetEntity = \"" . EntityManager::PREFIX . "\" . str_replace(\"\\\\\", \"\", \$ref->targetEntity) . \"Entity\";\n\t}\n}\n\nreturn \$this->references;");
 	}
 
@@ -227,7 +227,7 @@ final class EntityManager {
 			foreach ($column['annotations'] as $key => $doc) {
 				if ($key == "var") {
 					$return = implode(" ", $doc);
-					$method->addDocument("@return " . $return);
+					$method->addComment("@return " . $return);
 					break;
 				}
 			}
@@ -264,7 +264,7 @@ final class EntityManager {
 			}
 			if ($repository) {
 				$repository->addMethod("get" . ucfirst($ref->property))
-					->addDocument($phpDoc)
+					->addComment($phpDoc)
 					->setBody($body);
 			}
 		}
@@ -283,9 +283,9 @@ final class EntityManager {
 				$parameter->setName("obj");
 				$parameter->setTypeHint($ref->targetEntity);
 				$repository->addMethod("add" . ucfirst($ref->property))
-					->addDocument("@param " . $ref->targetEntity . " \$obj")
-					->addDocument("@return \$this")
-					->addDocument('@throws \slimORM\Exceptions\RepositoryException')
+					->addComment("@param " . $ref->targetEntity . " \$obj")
+					->addComment("@return \$this")
+					->addComment('@throws \slimORM\Exceptions\RepositoryException')
 					->setParameters(array($parameter))
 					->setBody($body);
 			}
